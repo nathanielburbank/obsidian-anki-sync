@@ -1,6 +1,3 @@
-# vscode
-.vscode 
-
 # Intellij
 *.iml
 .idea
@@ -8,15 +5,29 @@
 # npm
 node_modules
 
-# Don't include the compiled main.js file in the repo.
-# They should be uploaded to GitHub releases instead.
+# We use yarn
+package-lock.json
+
+# Yarn
+yarn-error.log
+.yarn/*
+!.yarn/cache
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+
+# build
 main.js
-
-# Exclude sourcemaps
-*.map
-
-# obsidian
+*.js.map
 data.json
+rendered_test_file.json
+styles.css
 
-# Exclude macOS Finder (System Explorer) View States
-.DS_Store
+# Visual Studio Code
+.vscode
+*.code-workspace
+
+# Local History for Visual Studio Code
+.history/
