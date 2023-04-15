@@ -1,7 +1,7 @@
 {
   "id": "obsidian-anki-sync",
   "name": "AnkiSync",
-  "version": "0.6.5",
+  "version": "0.6.6",
   "minAppVersion": "0.13.16",
   "description": "Yet Another Anki Bridge (Ext)",
   "author": "Nathaniel Burbank",
