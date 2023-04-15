@@ -1,63 +1,42 @@
-#!/bin/bash
+#!/bin/zsh
+# cd to git root https://stackoverflow.com/a/38843585
+r=$(git rev-parse --git-dir) && r=$(cd "$r" && pwd)/ && cd "${r%%/.git/*}"
 
-set -euo pipefail
-
-if [ "$#" -ne 2 ]; then
-    echo "Must provide exactly two arguments."
-    echo "First one must be the new version number."
-    echo "Second one must be the minimum obsidian version for this release."
-    echo ""
-    echo "Example usage:"
-    echo "./release.sh 0.3.0 0.11.13"
-    echo "Exiting."
-
-    exit 1
+if [[ ! -f "./manifest.json" ]] ; then
+  echo "manifest.json does not exist yet"
+  return
+fi
+if [[ ! -f "./.github/workflows/release.yml" ]] ; then
+  echo "/.github/workflows/release.yml does not exist yet"
+  return
 fi
 
-if [[ $(git status --porcelain) ]]; then
-  echo "Changes in the git repo."
-  echo "Exiting."
+# get version number from the manifest of the latest release
+repoURL=$(git remote -v | grep git@github.com | grep fetch | head -n1 | cut -f2 | cut -d' ' -f1 | sed -e's/:/\//' -e 's/git@/https:\/\//' -e 's/\.git//' )
+manifestURL="$repoURL"/releases/latest/download/manifest.json
+lastVersion=$(curl -sL "$manifestURL" | grep "version" | cut -d\" -f4)
+echo "last version: $lastVersion"
 
-  exit 1
-fi
+# Ask for new version number
+echo -n "next version: "
+read nextVersion
 
-NEW_VERSION=$1
-MINIMUM_OBSIDIAN_VERSION=$2
+# set version number in `manifest.json`
+sed -E -i '' "s/\"version\".*/\"version\": \"$nextVersion\",/" "manifest.json"
 
-echo "Updating to version ${NEW_VERSION} with minimum obsidian version ${MINIMUM_OBSIDIAN_VERSION}"
+# add version number in `versions.json`, assuming same compatibility
+cat "versions.json" | egrep -v "^$" | grep -v "}" | sed -e '$ d' > temp
+minObsidianVersion=$(cat "versions.json" | egrep -v "^$" | grep -v "}" | tail -n1 | cut -d\" -f4)
+echo "  \"$lastVersion\": \"$minObsidianVersion\"," >> temp
+echo "  \"$nextVersion\": \"$minObsidianVersion\"" >> temp
+echo "}" >> temp
+mv temp versions.json
 
-read -p "Continue? [y/N] " -n 1 -r
-echo
-if [[ $REPLY =~ ^[Yy]$ ]]
-then
-  echo "Updating package.json"
-  TEMP_FILE=$(mktemp)
-  jq ".version |= \"${NEW_VERSION}\"" package.json > "$TEMP_FILE" || exit 1
-  mv "$TEMP_FILE" package.json
+# push the manifest and versions JSONs
+git add -A
+git commit -m "version bump to $nextVersion"
+git push
 
-  echo "Updating manifest.json"
-  TEMP_FILE=$(mktemp)
-  jq ".version |= \"${NEW_VERSION}\" | .minAppVersion |= \"${MINIMUM_OBSIDIAN_VERSION}\"" manifest.json > "$TEMP_FILE" || exit 1
-  mv "$TEMP_FILE" manifest.json
-
-  echo "Updating versions.json"
-  TEMP_FILE=$(mktemp)
-  jq ". += {\"${NEW_VERSION}\": \"${MINIMUM_OBSIDIAN_VERSION}\"}" versions.json > "$TEMP_FILE" || exit 1
-  mv "$TEMP_FILE" versions.json
-
-  read -p "Create git commit, tag, and push? [y/N] " -n 1 -r
-  echo
-  if [[ $REPLY =~ ^[Yy]$ ]]
-  then
-    git add -A .
-    git commit -m"Update to version ${NEW_VERSION}"
-    git tag "${NEW_VERSION}"
-    git push
-    LEFTHOOK=0 git push --tags
-  fi
-
-  echo "Remember to publish the documentation via Obsidian Publish!"
-else
-  echo "Exiting."
-  exit 1
-fi
+# trigger the release action
+git tag "$nextVersion"
+git push origin --tags
