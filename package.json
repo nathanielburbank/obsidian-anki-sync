@@ -1,10 +1,10 @@
 {
-  "name": "obsidian-ankibridge",
-  "version": "0.8.0",
-  "description": "Yet Another Anki Bridge.",
+  "name": "obsidian-anki-sync",
+  "version": "0.6.1",
+  "description": "Yet Another Anki Bridge. (Ext)",
   "keywords": [],
   "license": "MIT",
-  "author": "Jeppe Klitgaard <hi@jeppe.science>",
+  "author": "Nathaniel Burbank",
   "main": "main.js",
   "scripts": {
     "build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production && yarn sass:ci",
