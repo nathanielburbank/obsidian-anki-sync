@@ -32,11 +32,11 @@ echo "  \"$nextVersion\": \"$minObsidianVersion\"" >> temp
 echo "}" >> temp
 mv temp versions.json
 
-# push the manifest and versions JSONs
-git add -A
-git commit -m "version bump to $nextVersion"
-git push
+# # push the manifest and versions JSONs
+# git add -A
+# git commit -m "version bump to $nextVersion"
+# git push
 
-# trigger the release action
-git tag "$nextVersion"
-git push origin --tags
+# # trigger the release action
+# git tag "$nextVersion"
+# git push origin --tags
