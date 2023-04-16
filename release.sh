@@ -13,7 +13,7 @@ fi
 
 # get version number from the manifest of the latest release
 repoURL=$(git remote -v | grep git@github.com | grep fetch | head -n1 | cut -f2 | cut -d' ' -f1 | sed -e's/:/\//' -e 's/git@/https:\/\//' -e 's/\.git//' )
-manifestURL="$repoURL"/releases/latest/download/manifest.json
+manifestURL="$repoURL"/manifest.json
 lastVersion=$(curl -sL "$manifestURL" | grep "version" | cut -d\" -f4)
 echo "last version: $lastVersion"
 
